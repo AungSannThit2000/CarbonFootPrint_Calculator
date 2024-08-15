@@ -3,144 +3,148 @@ from geopy.distance import geodesic
 import folium
 from streamlit_folium import st_folium
 
-# Set page title
-st.title("Distance Calculator and Carbon Footprint Calculator")
+# Sidebar for navigation
+st.image("Footprint.png", use_column_width=True, caption="Embrace a Greener Future")
 
-# Distance Calculator Section
-st.header("Distance Calculator Between Two Locations on a Map")
+st.sidebar.title("Navigation")
+page = st.sidebar.radio("Go to", ["Distance Calculator", "Carbon Footprint Calculator"])
 
-# Session state to store selected points
-if 'points' not in st.session_state:
-    st.session_state.points = []
+# Page 1: Distance Calculator
+if page == "Distance Calculator":
+    st.title("Distance Calculator Between Two Locations on a Map")
 
-# Determine the center of the map
-if st.session_state.points:
-    # Center the map on the last selected point
-    map_center = st.session_state.points[-1]
-else:
-    # Default location (Assumption University of Thailand)
-    map_center = [13.6120155, 100.836967]
+    # Session state to store selected points
+    if 'points' not in st.session_state:
+        st.session_state.points = []
 
-zoom_level = 15  # Zoom level for the map
+    # Determine the center of the map
+    if st.session_state.points:
+        # Center the map on the last selected point
+        map_center = st.session_state.points[-1]
+    else:
+        # Default location (Assumption University of Thailand)
+        map_center = [13.612015, 100.836967]
 
-# Create the map centered on the last clicked location or default location
-m = folium.Map(location=map_center, zoom_start=zoom_level)
+    zoom_level = 15  # Zoom level for the map
 
-# Add markers for all stored points
-for point in st.session_state.points:
-    folium.Marker(location=point).add_to(m)
+    # Create the map centered on the last clicked location or default location
+    m = folium.Map(location=map_center, zoom_start=zoom_level)
 
-# Add map functionality to capture clicks
-data = st_folium(m, height=500, width=700)
+    # Add markers for all stored points
+    for point in st.session_state.points:
+        folium.Marker(location=point).add_to(m)
 
-# Handle map clicks and store the points
-if data and data['last_clicked']:
-    lat_lon = [data['last_clicked']['lat'], data['last_clicked']['lng']]
-    st.session_state.points.append(lat_lon)
+    # Add map functionality to capture clicks
+    data = st_folium(m, height=500, width=700)
 
-    # Display the selected coordinates
-    st.write(f"Selected Location: Latitude = {lat_lon[0]}, Longitude = {lat_lon[1]}")
+    # Handle map clicks and store the points
+    if data and data['last_clicked']:
+        lat_lon = [data['last_clicked']['lat'], data['last_clicked']['lng']]
+        st.session_state.points.append(lat_lon)
 
-    # Limit the number of points to 2
-    if len(st.session_state.points) > 2:
-        st.session_state.points = st.session_state.points[-2:]
+        # Display the selected coordinates
+        st.write(f"Selected Location: Latitude = {lat_lon[0]}, Longitude = {lat_lon[1]}")
 
-# Distance calculation and display
-if len(st.session_state.points) == 2:
-    loc1 = st.session_state.points[0]
-    loc2 = st.session_state.points[1]
+        # Limit the number of points to 2
+        if len(st.session_state.points) > 2:
+            st.session_state.points = st.session_state.points[-2:]
 
-    # Calculate the distance
-    distance = geodesic(loc1, loc2).kilometers
+    # Distance calculation and display
+    if len(st.session_state.points) == 2:
+        loc1 = st.session_state.points[0]
+        loc2 = st.session_state.points[1]
 
-    # Display the distance
-    st.write(f"The distance between the two locations is: **{distance:.2f} kilometers**")
+        # Calculate the distance
+        distance = geodesic(loc1, loc2).kilometers
 
-# Reset button to clear points and reset the map
-if st.button("Reset Map"):
-    # Clear the session state
-    st.session_state.points = []
+        # Display the distance
+        st.write(f"The distance between the two locations is: **{distance:.2f} kilometers**")
 
-    # Reinitialize the map by creating a new folium Map object centered at the default location
-    m = folium.Map(location=[13.6525, 100.4931], zoom_start=zoom_level)
-    st_folium(m, height=500, width=700)
-    st.write("Map has been reset. Please select new locations.")
+    # Reset button to clear points and reset the map
+    if st.button("Reset Map"):
+        # Clear the session state
+        st.session_state.points = []
 
-# Carbon Footprint Calculator Section
-st.header("Monthly Carbon Footprint Calculator")
+        # Reinitialize the map by creating a new folium Map object centered at the default location
+        m = folium.Map(location=[13.6525, 100.4931], zoom_start=zoom_level)
+        st_folium(m, height=500, width=700)
+        st.write("Map has been reset. Please select new locations.")
 
-# Session state to store transportation records
-if 'transportation_records' not in st.session_state:
-    st.session_state.transportation_records = []
+# Page 2: Carbon Footprint Calculator
+elif page == "Carbon Footprint Calculator":
+    st.title("Monthly Carbon Footprint Calculator")
 
-# Input for adding a new transportation record
-st.subheader("Add Transportation Record")
-transport_type = st.selectbox("Select Transportation Type",
-                              ["Car", "Public Transport (Bus/Train)", "Short-haul Flight", "Long-haul Flight"])
-distance_traveled = st.number_input("Distance Traveled (in kilometers)", min_value=0.0, format="%.2f", value=0.0)
-number_of_trips = st.number_input("Number of Trips", min_value=1, value=1)
+    # Session state to store transportation records
+    if 'transportation_records' not in st.session_state:
+        st.session_state.transportation_records = []
 
-# Button to add the transportation record
-if st.button("Add Transportation Record"):
-    if distance_traveled > 0 and number_of_trips > 0:
-        st.session_state.transportation_records.append({
-            "type": transport_type,
-            "distance": distance_traveled,
-            "trips": number_of_trips
-        })
-        st.success(f"Added {transport_type} - {distance_traveled} km x {number_of_trips} trips")
+    # Input for adding a new transportation record
+    st.subheader("Add Transportation Record")
+    transport_type = st.selectbox("Select Transportation Type",
+                                  ["Car", "Public Transport (Bus/Train)", "Short-haul Flight", "Long-haul Flight"])
+    distance_traveled = st.number_input("Distance Traveled (in kilometers)", min_value=0.0, format="%.2f", value=0.0)
+    number_of_trips = st.number_input("Number of Trips", min_value=1, value=1)
 
-# Display the added transportation records
-if st.session_state.transportation_records:
-    st.subheader("Transportation Records")
-    for idx, record in enumerate(st.session_state.transportation_records):
-        st.write(f"{idx + 1}. {record['type']} - {record['distance']} km x {record['trips']} trips")
+    # Button to add the transportation record
+    if st.button("Add Transportation Record"):
+        if distance_traveled > 0 and number_of_trips > 0:
+            st.session_state.transportation_records.append({
+                "type": transport_type,
+                "distance": distance_traveled,
+                "trips": number_of_trips
+            })
+            st.success(f"Added {transport_type} - {distance_traveled} km x {number_of_trips} trips")
 
-# Conversion factors for carbon emissions
-EMISSION_FACTORS = {
-    "Car": 0.271,  # kg CO2 per km
-    "Public Transport (Bus/Train)": 0.1,  # kg CO2 per km
-    "Short-haul Flight": 0.255,  # kg CO2 per km
-    "Long-haul Flight": 0.150  # kg CO2 per km
-}
+    # Display the added transportation records
+    if st.session_state.transportation_records:
+        st.subheader("Transportation Records")
+        for idx, record in enumerate(st.session_state.transportation_records):
+            st.write(f"{idx + 1}. {record['type']} - {record['distance']} km x {record['trips']} trips")
 
-# Calculate the total transportation carbon footprint
-total_transportation_footprint = 0
-for record in st.session_state.transportation_records:
-    emission_factor = EMISSION_FACTORS.get(record["type"], 0)
-    total_transportation_footprint += record["distance"] * record["trips"] * emission_factor
+    # Conversion factors for carbon emissions
+    EMISSION_FACTORS = {
+        "Car": 0.271,  # kg CO2 per km
+        "Public Transport (Bus/Train)": 0.1,  # kg CO2 per km
+        "Short-haul Flight": 0.255,  # kg CO2 per km
+        "Long-haul Flight": 0.150  # kg CO2 per km
+    }
 
-# Input fields for Electricity Usage
-st.subheader("Electricity Usage")
-electricity_kwh = st.number_input("How many kilowatt-hours (kWh) of electricity did you use?", min_value=0.0, format="%.2f", value=0.0)
-ELECTRICITY_EMISSION_FACTOR = 0.92  # kg CO2 per kWh
-electricity_footprint = electricity_kwh * ELECTRICITY_EMISSION_FACTOR
+    # Calculate the total transportation carbon footprint
+    total_transportation_footprint = 0
+    for record in st.session_state.transportation_records:
+        emission_factor = EMISSION_FACTORS.get(record["type"], 0)
+        total_transportation_footprint += record["distance"] * record["trips"] * emission_factor
 
-# Input fields for Food Consumption
-st.subheader("Food Consumption")
-diet_type = st.selectbox("What is your diet type?", ["Omnivore", "Vegetarian", "Vegan"])
-FOOD_EMISSION_FACTOR = {"Omnivore": 2.5, "Vegetarian": 1.7, "Vegan": 1.5}  # kg CO2 per day
-food_footprint = FOOD_EMISSION_FACTOR[diet_type] * 30  # Assume 30 days in a month
+    # Input fields for Electricity Usage
+    st.subheader("Electricity Usage")
+    electricity_kwh = st.number_input("How many kilowatt-hours (kWh) of electricity did you use?",min_value=0.0, format="%.2f", value=0.0)
+    ELECTRICITY_EMISSION_FACTOR = 0.92  # kg CO2 per kWh
+    electricity_footprint = electricity_kwh * ELECTRICITY_EMISSION_FACTOR
 
-# Input fields for Waste Generation
-st.subheader("Waste Generation")
-waste_kg = st.number_input("How many kilograms of waste did you generate?", min_value=0.0, format="%.2f", value=0.0)
-WASTE_EMISSION_FACTOR = 0.5  # kg CO2 per kg of waste
-waste_footprint = waste_kg * WASTE_EMISSION_FACTOR
+    # Input fields for Food Consumption
+    st.subheader("Food Consumption")
+    diet_type = st.selectbox("What is your diet type?", ["Omnivore", "Vegetarian", "Vegan"])
+    FOOD_EMISSION_FACTOR = {"Omnivore": 2.5, "Vegetarian": 1.7, "Vegan": 1.5}  # kg CO2 per day
+    food_footprint = FOOD_EMISSION_FACTOR[diet_type] * 30  # Assume 30 days in a month
 
-# Calculate total carbon footprint
-total_carbon_footprint = total_transportation_footprint + electricity_footprint + food_footprint + waste_footprint
+    # Input fields for Waste Generation
+    st.subheader("Waste Generation")
+    waste_kg = st.number_input("How many kilograms of waste did you generate?", min_value=0.0, format="%.2f", value=0.0)
+    WASTE_EMISSION_FACTOR = 0.5  # kg CO2 per kg of waste
+    waste_footprint = waste_kg * WASTE_EMISSION_FACTOR
 
-# Display the results
-st.header("Your Estimated Monthly Carbon Footprint")
-st.write(f"**Transportation:** {total_transportation_footprint:.2f} kg CO2")
-st.write(f"**Electricity Usage:** {electricity_footprint:.2f} kg CO2")
-st.write(f"**Food Consumption:** {food_footprint:.2f} kg CO2")
-st.write(f"**Waste Generation:** {waste_footprint:.2f} kg CO2")
-st.write(f"### Total Monthly Carbon Footprint: {total_carbon_footprint:.2f} kg CO2")
+    # Calculate total carbon footprint
+    total_carbon_footprint = total_transportation_footprint + electricity_footprint + food_footprint + waste_footprint
 
-# Button to reset all inputs
-if st.button("Reset Carbon Footprint Calculator"):
-    st.session_state.transportation_records = []
-    st.session_state.points = []
-    st.experimental_rerun()
+    # Display the results
+    st.header("Your Estimated Monthly Carbon Footprint")
+    st.write(f"**Transportation:** {total_transportation_footprint:.2f} kg CO2")
+    st.write(f"**Electricity Usage:** {electricity_footprint:.2f} kg CO2")
+    st.write(f"**Food Consumption:** {food_footprint:.2f} kg CO2")
+    st.write(f"**Waste Generation:** {waste_footprint:.2f} kg CO2")
+    st.write(f"### Total Monthly Carbon Footprint: {total_carbon_footprint:.2f} kg CO2")
+
+    # Button to reset all inputs
+    if st.button("Reset Carbon Footprint Calculator"):
+        st.session_state.transportation_records = []
+        st.experimental_rerun()
