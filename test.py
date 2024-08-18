@@ -6,7 +6,7 @@ from streamlit_folium import st_folium
 # Sidebar for navigation
 st.image("Footprint.png", use_column_width=True, caption="Embrace a Greener Future")
 
-st.sidebar.title("Navigation")
+st.sidebar.title("Choose an app")
 page = st.sidebar.radio("Go to", ["Distance Calculator", "Carbon Footprint Calculator"])
 
 # Page 1: Distance Calculator
