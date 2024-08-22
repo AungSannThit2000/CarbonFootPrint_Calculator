@@ -48,3 +48,4 @@ wheel==0.43.0
 xyzservices==2024.6.0
 
 openai~=0.28.0
+python-dotenv~=1.0.1

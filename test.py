@@ -3,9 +3,16 @@ from geopy.distance import geodesic
 import folium
 from streamlit_folium import st_folium
 import openai
+import os
+from dotenv import load_dotenv
 
-openai.api_key = "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"
 
+
+
+
+# Load environment variables from the .env file
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 def reset_input():
     st.session_state.waste_kg = 0.00
     st.session_state.electricity_kwh = 0.00
