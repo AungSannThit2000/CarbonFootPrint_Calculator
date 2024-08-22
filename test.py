@@ -28,7 +28,7 @@ def get_footprint_tips(footprint):
         response = openai.ChatCompletion.create(
             model="gpt-4",  # Use "gpt-4" or another model depending on your API provider
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=150,
+            max_tokens=300,
             temperature=0.7
         )
         return response['choices'][0]['message']['content'].strip()
