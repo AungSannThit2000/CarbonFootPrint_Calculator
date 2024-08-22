@@ -2,6 +2,31 @@ import streamlit as st
 from geopy.distance import geodesic
 import folium
 from streamlit_folium import st_folium
+import openai
+
+openai.api_key = "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"
+
+def reset_input():
+    st.session_state.waste_kg = 0.00
+    st.session_state.electricity_kwh = 0.00
+    st.session_state.distance_traveled = 0.00
+    st.session_state.number_of_trips = 1
+
+# Function to get AI-generated tips based on carbon footprint
+def get_footprint_tips(footprint):
+    # Define a prompt based on the carbon footprint value
+    prompt = f"My monthly carbon footprint is {footprint:.2f} kg CO2. Is it good or bad?"
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # Use "gpt-4" or another model depending on your API provider
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=150,
+            temperature=0.7
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 # Sidebar for navigation
 st.image("Footprint.png", use_column_width=True, caption="Embrace a Greener Future")
@@ -11,7 +36,7 @@ page = st.sidebar.radio("Go to", ["Distance Calculator", "Carbon Footprint Calcu
 
 # Page 1: Distance Calculator
 if page == "Distance Calculator":
-    st.title("Distance Calculator Between Two Locations on a Map")
+    st.title("Get the distance")
 
     # Session state to store selected points
     if 'points' not in st.session_state:
@@ -82,8 +107,8 @@ elif page == "Carbon Footprint Calculator":
     st.subheader("Add Transportation Record")
     transport_type = st.selectbox("Select Transportation Type",
                                   ["Car", "Public Transport (Bus/Train)", "Short-haul Flight", "Long-haul Flight"])
-    distance_traveled = st.number_input("Distance Traveled (in kilometers)", min_value=0.0, format="%.2f", value=0.0)
-    number_of_trips = st.number_input("Number of Trips", min_value=1, value=1)
+    distance_traveled = st.number_input("Distance Traveled (in kilometers)", min_value=0.0, format="%.2f", value=0.0, key= 'distance_traveled')
+    number_of_trips = st.number_input("Number of Trips", min_value=1, value=1, key= 'number_of_trips')
 
     # Button to add the transportation record
     if st.button("Add Transportation Record"):
@@ -117,7 +142,7 @@ elif page == "Carbon Footprint Calculator":
 
     # Input fields for Electricity Usage
     st.subheader("Electricity Usage")
-    electricity_kwh = st.number_input("How many kilowatt-hours (kWh) of electricity did you use?",min_value=0.0, format="%.2f", value=0.0)
+    electricity_kwh = st.number_input("How many kilowatt-hours (kWh) of electricity did you use?",min_value=0.0, format="%.2f", value=0.0 , key = 'electricity_kwh' )
     ELECTRICITY_EMISSION_FACTOR = 0.92  # kg CO2 per kWh
     electricity_footprint = electricity_kwh * ELECTRICITY_EMISSION_FACTOR
 
@@ -129,7 +154,7 @@ elif page == "Carbon Footprint Calculator":
 
     # Input fields for Waste Generation
     st.subheader("Waste Generation")
-    waste_kg = st.number_input("How many kilograms of waste did you generate?", min_value=0.0, format="%.2f", value=0.0)
+    waste_kg = st.number_input("How many kilograms of waste did you generate?", min_value=0.0, format="%.2f", value=0.0, key = 'waste_kg')
     WASTE_EMISSION_FACTOR = 0.5  # kg CO2 per kg of waste
     waste_footprint = waste_kg * WASTE_EMISSION_FACTOR
 
@@ -144,7 +169,65 @@ elif page == "Carbon Footprint Calculator":
     st.write(f"**Waste Generation:** {waste_footprint:.2f} kg CO2")
     st.write(f"### Total Monthly Carbon Footprint: {total_carbon_footprint:.2f} kg CO2")
 
-    # Button to reset all inputs
-    if st.button("Reset Carbon Footprint Calculator"):
-        st.session_state.transportation_records = []
-        st.experimental_rerun()
+    # Generate AI tips based on the carbon footprint
+    if total_carbon_footprint > 0:
+        st.subheader("Carbonbot's Tips to Reduce Your Carbon Footprint")
+        ai_tips = get_footprint_tips(total_carbon_footprint)
+        st.write(ai_tips)
+# Button to reset all inputs
+    button = st.button("Reset Carbon Footprint Calculator",on_click = reset_input)
+        # Reset session state variables
+
+
+def get_bot_response(prompt):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # You can change the model if needed
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=150,
+            temperature=0.7
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+
+
+# New Section: Carbonbot
+st.subheader("Carbonbot: Your Personal Sustainability Assistant")
+
+# Initialize the chat history in session state if not already present
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
+
+# Text input for the user's message
+user_input = st.text_input("Ask Carbonbot for tips or advice:")
+
+# Button to submit the message
+if st.button("Send"):
+    if user_input:
+        # Append the user input to the chat history
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
+
+        # Get the chatbot response
+        bot_response = get_bot_response(user_input)
+
+        # Append the bot response to the chat history
+        st.session_state.chat_history.append({"role": "bot", "content": bot_response})
+
+    else:
+        st.write("Please enter a message to send to Carbonbot.")
+
+# Display the conversation history
+if st.session_state.chat_history:
+    for message in st.session_state.chat_history:
+        if message['role'] == "user":
+            st.write(f"**You:** {message['content']}")
+        else:
+            st.write(f"**Carbonbot:** {message['content']}")
+
+# Button to clear the chat
+if st.button("Clear Chat"):
+    st.session_state.chat_history = []
+    st.write("Chat cleared.")
