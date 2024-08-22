@@ -191,7 +191,7 @@ def get_bot_response(prompt):
         response = openai.ChatCompletion.create(
             model="gpt-4",  # You can change the model if needed
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=150,
+            max_tokens=300,
             temperature=0.7
         )
         return response['choices'][0]['message']['content'].strip()
