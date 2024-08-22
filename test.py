@@ -202,39 +202,39 @@ def get_bot_response(prompt):
 
 
 # New Section: Carbonbot
-st.subheader("Carbonbot: Your Personal Sustainability Assistant")
+    st.subheader("Carbonbot: Your Personal Sustainability Assistant")
 
-# Initialize the chat history in session state if not already present
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
+    # Initialize the chat history in session state if not already present
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
 
-# Text input for the user's message
-user_input = st.text_input("Ask Carbonbot for tips or advice:")
+    # Text input for the user's message
+    user_input = st.text_input("Ask Carbonbot for tips or advice:")
 
-# Button to submit the message
-if st.button("Send"):
-    if user_input:
-        # Append the user input to the chat history
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
+    # Button to submit the message
+    if st.button("Send"):
+        if user_input:
+            # Append the user input to the chat history
+            st.session_state.chat_history.append({"role": "user", "content": user_input})
 
-        # Get the chatbot response
-        bot_response = get_bot_response(user_input)
+            # Get the chatbot response
+            bot_response = get_bot_response(user_input)
 
-        # Append the bot response to the chat history
-        st.session_state.chat_history.append({"role": "bot", "content": bot_response})
+            # Append the bot response to the chat history
+            st.session_state.chat_history.append({"role": "bot", "content": bot_response})
 
-    else:
-        st.write("Please enter a message to send to Carbonbot.")
-
-# Display the conversation history
-if st.session_state.chat_history:
-    for message in st.session_state.chat_history:
-        if message['role'] == "user":
-            st.write(f"**You:** {message['content']}")
         else:
-            st.write(f"**Carbonbot:** {message['content']}")
+            st.write("Please enter a message to send to Carbonbot.")
 
-# Button to clear the chat
-if st.button("Clear Chat"):
-    st.session_state.chat_history = []
-    st.write("Chat cleared.")
+    # Display the conversation history
+    if st.session_state.chat_history:
+        for message in st.session_state.chat_history:
+            if message['role'] == "user":
+                st.write(f"**You:** {message['content']}")
+            else:
+                st.write(f"**Carbonbot:** {message['content']}")
+
+    # Button to clear the chat
+    if st.button("Clear Chat"):
+        st.session_state.chat_history = []
+        st.write("Chat cleared.")
