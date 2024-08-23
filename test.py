@@ -236,4 +236,3 @@ elif page == "Carbon Bot":
     # Button to clear the chat
     if st.button("Clear Chat"):
         st.session_state.chat_history = []
-        st.write("Chat cleared.")
