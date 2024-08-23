@@ -6,18 +6,17 @@ import openai
 import os
 from dotenv import load_dotenv
 
-
-
-
-
 # Load environment variables from the .env file
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
 def reset_input():
     st.session_state.waste_kg = 0.00
     st.session_state.electricity_kwh = 0.00
     st.session_state.distance_traveled = 0.00
     st.session_state.number_of_trips = 1
+
 
 # Function to get AI-generated tips based on carbon footprint
 def get_footprint_tips(footprint):
@@ -35,11 +34,25 @@ def get_footprint_tips(footprint):
     except Exception as e:
         return f"Error: {str(e)}"
 
+
+def get_bot_response(prompt):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # You can change the model if needed
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+            temperature=0.7
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
 # Sidebar for navigation
 st.image("Footprint.png", use_column_width=True, caption="Embrace a Greener Future")
 
 st.sidebar.title("Choose an app")
-page = st.sidebar.radio("Go to", ["Distance Calculator", "Carbon Footprint Calculator"])
+page = st.sidebar.radio("Go to", ["Distance Calculator", "Carbon Footprint Calculator","Carbon Bot"])
 
 # Page 1: Distance Calculator
 if page == "Distance Calculator":
@@ -114,8 +127,9 @@ elif page == "Carbon Footprint Calculator":
     st.subheader("Add Transportation Record")
     transport_type = st.selectbox("Select Transportation Type",
                                   ["Car", "Public Transport (Bus/Train)", "Short-haul Flight", "Long-haul Flight"])
-    distance_traveled = st.number_input("Distance Traveled (in kilometers)", min_value=0.0, format="%.2f", value=0.0, key= 'distance_traveled')
-    number_of_trips = st.number_input("Number of Trips", min_value=1, value=1, key= 'number_of_trips')
+    distance_traveled = st.number_input("Distance Traveled (in kilometers)", min_value=0.0, format="%.2f", value=0.0,
+                                        key='distance_traveled')
+    number_of_trips = st.number_input("Number of Trips", min_value=1, value=1, key='number_of_trips')
 
     # Button to add the transportation record
     if st.button("Add Transportation Record"):
@@ -149,7 +163,8 @@ elif page == "Carbon Footprint Calculator":
 
     # Input fields for Electricity Usage
     st.subheader("Electricity Usage")
-    electricity_kwh = st.number_input("How many kilowatt-hours (kWh) of electricity did you use?",min_value=0.0, format="%.2f", value=0.0 , key = 'electricity_kwh' )
+    electricity_kwh = st.number_input("How many kilowatt-hours (kWh) of electricity did you use?", min_value=0.0,
+                                      format="%.2f", value=0.0, key='electricity_kwh')
     ELECTRICITY_EMISSION_FACTOR = 0.92  # kg CO2 per kWh
     electricity_footprint = electricity_kwh * ELECTRICITY_EMISSION_FACTOR
 
@@ -161,7 +176,8 @@ elif page == "Carbon Footprint Calculator":
 
     # Input fields for Waste Generation
     st.subheader("Waste Generation")
-    waste_kg = st.number_input("How many kilograms of waste did you generate?", min_value=0.0, format="%.2f", value=0.0, key = 'waste_kg')
+    waste_kg = st.number_input("How many kilograms of waste did you generate?", min_value=0.0, format="%.2f", value=0.0,
+                               key='waste_kg')
     WASTE_EMISSION_FACTOR = 0.5  # kg CO2 per kg of waste
     waste_footprint = waste_kg * WASTE_EMISSION_FACTOR
 
@@ -181,27 +197,10 @@ elif page == "Carbon Footprint Calculator":
         st.subheader("Carbonbot's Tips to Reduce Your Carbon Footprint")
         ai_tips = get_footprint_tips(total_carbon_footprint)
         st.write(ai_tips)
-# Button to reset all inputs
-    button = st.button("Reset Carbon Footprint Calculator",on_click = reset_input)
-        # Reset session state variables
-
-
-def get_bot_response(prompt):
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",  # You can change the model if needed
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=300,
-            temperature=0.7
-        )
-        return response['choices'][0]['message']['content'].strip()
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-
-
-
-# New Section: Carbonbot
+    # Button to reset all inputs
+    button = st.button("Reset Carbon Footprint Calculator", on_click=reset_input)
+    # Reset session state variables
+elif page == "Carbon Bot":
     st.subheader("Carbonbot: Your Personal Sustainability Assistant")
 
     # Initialize the chat history in session state if not already present
