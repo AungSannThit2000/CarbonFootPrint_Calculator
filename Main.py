@@ -229,7 +229,7 @@ elif page == "Carbon Bot":
     if st.session_state.chat_history:
         for message in st.session_state.chat_history:
             if message['role'] == "user":
-                st.write(f"**You:** {message['content']}")
+                st.write(f"**You:** {['content']}")
             else:
                 st.write(f"**Carbonbot:** {message['content']}")
 
